@@ -1,47 +1,89 @@
-const {Web3} = require('web3');
-const fs = require('fs');
-const crypto = require('crypto');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const { Web3 } = require('web3');
 
-// Configure Web3.js to connect to your private blockchain (replace with your RPC endpoint)
-const web3 = new Web3('http://127.0.0.1:8545');
-// Replace with your contract address and ABI
-const contractAddress = '0x24D8d59B496eb0c4B24f5f98C9C901ad28fC5561';
-const contractABI = [
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "hash",
-				"type": "bytes32"
-			}
-		],
-		"name": "addHash",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
+// ... [rest of your imports]
+
+const app = express();
+const PORT = 3001;
+
+// Middleware for CORS and parsing POST request bodies
+app.use(cors());
+app.use(bodyParser.json());
+
+const web3 = new Web3('http://3.110.86.22:8545');
+const contractABI =[
 	{
 		"anonymous": false,
 		"inputs": [
 			{
 				"indexed": false,
 				"internalType": "bytes32",
-				"name": "hash",
+				"name": "rawHash",
+				"type": "bytes32"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes32",
+				"name": "cid",
 				"type": "bytes32"
 			}
 		],
-		"name": "HashAdded",
+		"name": "DocumentAdded",
 		"type": "event"
 	},
 	{
 		"inputs": [
 			{
 				"internalType": "bytes32",
-				"name": "hash",
+				"name": "rawHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "bytes32",
+				"name": "cid",
 				"type": "bytes32"
 			}
 		],
-		"name": "verifyHash",
+		"name": "addDocument",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "rawHash",
+				"type": "bytes32"
+			}
+		],
+		"name": "verifyDocument",
+		"outputs": [
+			{
+				"internalType": "bytes32",
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "rawHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "bytes32",
+				"name": "cid",
+				"type": "bytes32"
+			}
+		],
+		"name": "verifyHashAndCID",
 		"outputs": [
 			{
 				"internalType": "bool",
@@ -53,51 +95,36 @@ const contractABI = [
 		"type": "function"
 	}
 ];
-
-// Replace with your Ethereum account address (validator's address)
-const fromAddress = '0x0277a288162efE374D19D8F4A05d91a971455f42';
-
-// Create a Web3 contract instance
+const contractAddress = '0xf40a36a93090f13a36a7d1d626b187f1b095955d'
 const contract = new web3.eth.Contract(contractABI, contractAddress);
+const fromAddress = '0xc11ef750d80bd43673b9dbef83b554e718d4f7f3';
 
-// Function to hash a local PDF file
-function hashPDF(filePath) {
-    const fileData = fs.readFileSync(filePath);
-    const fileHash = crypto.createHash('sha256').update(fileData).digest('hex');
-    return `0x${fileHash}`;
-}
-
-// Function to add the hash to the blockchain
-async function addToBlockchain(hash) {
+// Modified function to add both raw hash and CID to the blockchain
+async function addToBlockchain(rawHash, cid) {
     try {
-        const gas = await contract.methods.addHash(hash).estimateGas();
-        const tx = await contract.methods.addHash(hash).send({ from: fromAddress, gas });
-
+        const gas = await contract.methods.addDocument(rawHash, cid).estimateGas();
+        const tx = await contract.methods.addDocument(rawHash, cid).send({ from: fromAddress, gas });
         console.log('Transaction hash:', tx.transactionHash);
-        console.log('Hash added to the blockchain:', hash);
-
+        console.log('Document added to the blockchain:', rawHash, cid);
     } catch (error) {
-        console.error('Error adding hash to the blockchain:', error);
+        console.error('Error adding document to the blockchain:', error);
     }
 }
 
-// Replace with the path to the PDF file you want to hash
-const pdfFilePath = './pdf/document.pdf';
-
-(async () => {
-    try {
-        const pdfHash = hashPDF(pdfFilePath);
-        await addToBlockchain(pdfHash);
-
-        // You can now check if the hash is stored in the blockchain
-        const isHashStored = await contract.methods.verifyHash(pdfHash).call();
-
-        if (isHashStored) {
-            console.log('Hash is stored in the blockchain.');
-        } else {
-            console.log('Hash is not stored in the blockchain.');
-        }
-    } catch (error) {
-        console.error('Error:', error);
+// Endpoint to receive raw hash and CID from the frontend
+app.post('/addDocument', async (req, res) => {
+    const { rawHash, cid } = req.body;
+    if (!rawHash || !cid) {
+        return res.status(400).json({ message: "Both rawHash and cid are required" });
     }
-})();
+    try {
+        await addToBlockchain(rawHash, cid);
+        res.status(200).json({ message: "Document added successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.toString() });
+    }
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://0.0.0.0:${PORT}`);
+});
