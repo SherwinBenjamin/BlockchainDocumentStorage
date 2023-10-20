@@ -12,7 +12,11 @@ const PORT = 3001;
 app.use(cors());
 app.use(bodyParser.json());
 
+<<<<<<< HEAD
 const web3 = new Web3("http://65.0.30.242:8545");
+=======
+const web3 = new Web3("http://13.232.187.19:8545");
+>>>>>>> 6ebb5151fe1f2af5d45af47f1cd51b234092630e
 const contractABI = [
   {
     anonymous: false,
@@ -129,6 +133,31 @@ app.post("/addDocument", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
+=======
+app.post("/verifyDocument", async (req, res) => {
+	const { rawHash } = req.body;
+	if (!rawHash) {
+	  return res.status(400).json({ message: "rawHash is required" });
+	}
+	try {
+	  const cid = await contract.methods.verifyDocument(rawHash).call();
+	  if (cid) {
+		
+		res.status(200).json({ message: "Document found successfully", cid });
+		console.log("Document found successfully");
+	  } else {
+		
+		res.status(404).json({ message: "Document not found" });
+		console.log("Document not found");
+	  }
+	} catch (error) {
+		console.error("Error in /verifyDocument:", error);
+		res.status(500).json({ message: "Server error", error: error.toString() });
+	  }
+  });
+
+>>>>>>> 6ebb5151fe1f2af5d45af47f1cd51b234092630e
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
