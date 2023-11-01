@@ -2,15 +2,17 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const { Web3 } = require("web3");
-
-// ... [rest of your imports]
-
 const app = express();
 const PORT = 3001;
 
 // Middleware for CORS and parsing POST request bodies
 app.use(cors());
 app.use(bodyParser.json());
+
+
+const fs = require('fs');
+const studentsData = JSON.parse(fs.readFileSync('path_to_students.json', 'utf8'));
+const adminsData = JSON.parse(fs.readFileSync('path_to_admins.json', 'utf8'));
 
 const web3 = new Web3("http://13.232.187.19:8545");
 const contractABI = [
@@ -144,6 +146,31 @@ async function addToBlockchain(regNumber, rawHash, cid) {
     console.error("Error adding document to the blockchain:", error);
   }
 }
+//student login endpoint
+app.post("/studentLogin", (req, res) => {
+	const { regNumber, phoneNumber } = req.body;
+	if (!regNumber || !phoneNumber) {
+	  return res.status(400).json({ message: "regNumber and phoneNumber are required" });
+	}
+	if (studentsData[regNumber] === phoneNumber) {
+	  res.status(200).json({ message: "Login successful" });
+	} else {
+	  res.status(401).json({ message: "Invalid credentials" });
+	}
+  });
+//admin login endpoint
+  app.post("/adminLogin", (req, res) => {
+	const { username, password } = req.body;
+	if (!username || !password) {
+	  return res.status(400).json({ message: "username and password are required" });
+	}
+	const admin = adminsData.find(admin => admin.username === username && admin.password === password);
+	if (admin) {
+	  res.status(200).json({ message: "Login successful" });
+	} else {
+	  res.status(401).json({ message: "Invalid credentials" });
+	}
+  });
 
 // Endpoint to receive raw hash and CID from the frontend
 app.post("/addDocument", async (req, res) => {
