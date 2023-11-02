@@ -11,10 +11,10 @@ app.use(bodyParser.json());
 
 
 const fs = require('fs');
-const studentsData = JSON.parse(fs.readFileSync('path_to_students.json', 'utf8'));
-const adminsData = JSON.parse(fs.readFileSync('path_to_admins.json', 'utf8'));
+const recipientsData = JSON.parse(fs.readFileSync('./datalists/recipient.json', 'utf8'));
+const adminsData = JSON.parse(fs.readFileSync('./datalists/admin.json', 'utf8'));
 
-const web3 = new Web3("http://13.232.187.19:8545");
+const web3 = new Web3("http://65.2.190.0:8545");
 const contractABI = [
   {
     anonymous: false,
@@ -146,18 +146,18 @@ async function addToBlockchain(regNumber, rawHash, cid) {
     console.error("Error adding document to the blockchain:", error);
   }
 }
-//student login endpoint
-app.post("/studentLogin", (req, res) => {
-	const { regNumber, phoneNumber } = req.body;
-	if (!regNumber || !phoneNumber) {
-	  return res.status(400).json({ message: "regNumber and phoneNumber are required" });
-	}
-	if (studentsData[regNumber] === phoneNumber) {
-	  res.status(200).json({ message: "Login successful" });
-	} else {
-	  res.status(401).json({ message: "Invalid credentials" });
-	}
-  });
+// //recipient login endpoint
+// app.post("/recipientLogin", (req, res) => {
+// 	const { regNumber, phoneNumber } = req.body;
+// 	if (!regNumber || !phoneNumber) {
+// 	  return res.status(400).json({ message: "regNumber and phoneNumber are required" });
+// 	}
+// 	if (recipientsData[regNumber] === phoneNumber) {
+// 	  res.status(200).json({ message: "Login successful" });
+// 	} else {
+// 	  res.status(401).json({ message: "Invalid credentials" });
+// 	}
+//   });
 //admin login endpoint
   app.post("/adminLogin", (req, res) => {
 	const { username, password } = req.body;
@@ -212,10 +212,17 @@ app.post("/verifyDocument", async (req, res) => {
 });
 
 app.get("/getDocumentByRegNumber", async (req, res) => {
-  const { regNumber } = req.query;
-  if (!regNumber) {
-    return res.status(400).json({ message: "regNumber is required" });
+  const { regNumber, phoneNumber } = req.query;
+  if (!regNumber || !phoneNumber) {
+    return res.status(400).json({ message: "regNumber and phoneNumber are required" });
   }
+
+  // Assuming recipientsData is the object loaded from recipient.json
+  const storedPhoneNumber = recipientsData[regNumber];
+  if (!storedPhoneNumber || storedPhoneNumber !== phoneNumber) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
   try {
     const cids = await contract.methods
       .getDocumentsByRegNumber(regNumber)
@@ -232,6 +239,8 @@ app.get("/getDocumentByRegNumber", async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.toString() });
   }
 });
+
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

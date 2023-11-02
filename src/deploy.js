@@ -1,5 +1,5 @@
 var {Web3} = require('web3');
-var web3 = new Web3(new Web3.providers.HttpProvider('http://13.232.187.19:8545')); // replace with your EC2 IP and port
+var web3 = new Web3(new Web3.providers.HttpProvider('http://65.2.190.0:8545')); // replace with your EC2 IP and port
 
 var contractABI = [
 	{
