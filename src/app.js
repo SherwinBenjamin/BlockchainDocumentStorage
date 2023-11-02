@@ -17,13 +17,14 @@ const adminsData = JSON.parse(
   fs.readFileSync("./datalists/admin.json", "utf8")
 );
 
-<<<<<<< HEAD
-=======
-const fs = require('fs');
-const recipientsData = JSON.parse(fs.readFileSync('./datalists/recipient.json', 'utf8'));
-const adminsData = JSON.parse(fs.readFileSync('./datalists/admin.json', 'utf8'));
+const fs = require("fs");
+const recipientsData = JSON.parse(
+  fs.readFileSync("./datalists/recipient.json", "utf8")
+);
+const adminsData = JSON.parse(
+  fs.readFileSync("./datalists/admin.json", "utf8")
+);
 
->>>>>>> f0b99f905da3044a9000c89caea844bf94fb011f
 const web3 = new Web3("http://65.2.190.0:8545");
 const contractABI = [
   {
@@ -156,22 +157,6 @@ async function addToBlockchain(regNumber, rawHash, cid) {
     console.error("Error adding document to the blockchain:", error);
   }
 }
-<<<<<<< HEAD
-//student login endpoint
-app.post("/recipientLogin", (req, res) => {
-  const { regNumber, password } = req.body;
-  if (!regNumber || !password) {
-    return res
-      .status(400)
-      .json({ message: "regNumber and password are required" });
-  }
-  if (recipientsData[regNumber] === password) {
-    res.status(200).json({ message: "Login successful" });
-  } else {
-    res.status(401).json({ message: "Invalid credentials" });
-  }
-});
-=======
 // //recipient login endpoint
 // app.post("/recipientLogin", (req, res) => {
 // 	const { regNumber, phoneNumber } = req.body;
@@ -184,7 +169,6 @@ app.post("/recipientLogin", (req, res) => {
 // 	  res.status(401).json({ message: "Invalid credentials" });
 // 	}
 //   });
->>>>>>> f0b99f905da3044a9000c89caea844bf94fb011f
 //admin login endpoint
 app.post("/adminLogin", (req, res) => {
   const { username, password } = req.body;
@@ -267,13 +251,9 @@ app.post("/verifyDocument", async (req, res) => {
 app.get("/getDocumentByRegNumber", async (req, res) => {
   const { regNumber, phoneNumber } = req.query;
   if (!regNumber || !phoneNumber) {
-<<<<<<< HEAD
     return res
       .status(400)
       .json({ message: "regNumber and phoneNumber are required" });
-=======
-    return res.status(400).json({ message: "regNumber and phoneNumber are required" });
->>>>>>> f0b99f905da3044a9000c89caea844bf94fb011f
   }
 
   // Assuming recipientsData is the object loaded from recipient.json
@@ -298,12 +278,7 @@ app.get("/getDocumentByRegNumber", async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.toString() });
   }
 });
-<<<<<<< HEAD
-=======
 
-
-
->>>>>>> f0b99f905da3044a9000c89caea844bf94fb011f
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
