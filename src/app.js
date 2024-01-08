@@ -17,14 +17,6 @@ const adminsData = JSON.parse(
   fs.readFileSync("./datalists/admin.json", "utf8")
 );
 
-const fs = require("fs");
-const recipientsData = JSON.parse(
-  fs.readFileSync("./datalists/recipient.json", "utf8")
-);
-const adminsData = JSON.parse(
-  fs.readFileSync("./datalists/admin.json", "utf8")
-);
-
 const web3 = new Web3("http://65.2.190.0:8545");
 const contractABI = [
   {
@@ -157,6 +149,7 @@ async function addToBlockchain(regNumber, rawHash, cid) {
     console.error("Error adding document to the blockchain:", error);
   }
 }
+
 // //recipient login endpoint
 // app.post("/recipientLogin", (req, res) => {
 // 	const { regNumber, phoneNumber } = req.body;
